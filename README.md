@@ -4,7 +4,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/heroslender/Ethos.svg)](https://github.com/heroslender/Ethos/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues-raw/heroslender/Ethos.svg?label=issues)](https://github.com/heroslender/Ethos/issues)
-[![GitHub last commit](https://img.shields.io/github/last-commit/heroslender/Ethos/develop.svg)](https://github.com/heroslender/Ethos/commit)
+[![GitHub last commit](https://img.shields.io/github/last-commit/heroslender/Ethos.svg)](https://github.com/heroslender/Ethos/commit)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?color=1bcc1b)](https://choosealicense.com/licenses/mit)
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
