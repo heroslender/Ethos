@@ -4,12 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>Ethos</artifactId>
-        <groupId>com.heroslender</groupId>
+        <groupId>com.heroslender.ethos</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>Bukkit</artifactId>
+    <artifactId>ethos-bukkit</artifactId>
+
+    <name>Bukkit</name>
 
     <repositories>
         <repository>
@@ -26,8 +28,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.heroslender</groupId>
-            <artifactId>Common</artifactId>
+            <groupId>com.heroslender.ethos</groupId>
+            <artifactId>ethos-common</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
