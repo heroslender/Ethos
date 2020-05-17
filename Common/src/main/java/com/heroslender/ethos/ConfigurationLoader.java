@@ -1,6 +1,9 @@
 package com.heroslender.ethos;
 
 import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
+import com.heroslender.ethos.annotations.NotSerialized;
+import com.heroslender.ethos.annotations.Optional;
+import com.heroslender.ethos.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,31 +59,55 @@ public abstract class ConfigurationLoader<T, C> {
     }
 
     protected void saveField(@NotNull final Field field, @NotNull final Object instance) throws IllegalAccessException {
-        field.setAccessible(true);
-
-        final String configFieldName = field.getName();
+        final FieldPojo fieldPojo = load(field);
+        if (fieldPojo.isNotSerialized()) {
+            return;
+        }
 
         try {
-            setConfigValue(field, configFieldName, field.get(instance));
+            Object defaultValue = field.get(instance);
+            if (fieldPojo.isOptional() && defaultValue == null) {
+                return;
+            }
+
+            setConfigValue(fieldPojo, defaultValue);
         } catch (AdapterNotFoundException e) {
             logger.log(Level.SEVERE, e, () -> "Failed to initialize the field " + field.getName());
         }
     }
 
     protected void loadField(@NotNull final Field field, @NotNull final Object instance) throws IllegalAccessException, AdapterNotFoundException {
-        field.setAccessible(true);
+        final FieldPojo fieldPojo = load(field);
+        if (fieldPojo.isNotSerialized()) {
+            return;
+        }
 
-        final String configFieldName = field.getName();
-
-        final Object configValue = getConfigValue(field, configFieldName, field.get(instance));
+        final Object configValue = getConfigValue(fieldPojo, field.get(instance));
         if (configValue != null) {
             field.set(instance, configValue);
         }
     }
 
-    public abstract Object getConfigValue(Field field, String valuePath, @Nullable Object defaultValue) throws AdapterNotFoundException;
+    public abstract Object getConfigValue(FieldPojo field, @Nullable Object defaultValue) throws AdapterNotFoundException;
 
-    public abstract void setConfigValue(Field field, String valuePath, @Nullable Object value) throws AdapterNotFoundException;
+    public abstract void setConfigValue(FieldPojo field, @Nullable Object value) throws AdapterNotFoundException;
+
+    private FieldPojo load(@NotNull final Field field) {
+        field.setAccessible(true);
+
+        FieldPojo.Builder builder = new FieldPojo.Builder(field);
+        SerializedName name = field.getAnnotation(SerializedName.class);
+        if (name != null) {
+            builder.setSerializedName(name.value());
+        } else {
+            builder.setSerializedName(field.getName());
+        }
+
+        builder.setOptional(field.isAnnotationPresent(Optional.class));
+        builder.setNotSerialized(field.isAnnotationPresent(NotSerialized.class));
+
+        return builder.build();
+    }
 
     @Nullable
     protected T initClass(@NotNull Class<T> clazz) {

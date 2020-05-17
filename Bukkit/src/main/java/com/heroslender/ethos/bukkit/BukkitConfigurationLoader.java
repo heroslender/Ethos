@@ -1,15 +1,15 @@
 package com.heroslender.ethos.bukkit;
 
+import com.heroslender.ethos.ConfigurationLoader;
+import com.heroslender.ethos.FieldPojo;
+import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapterFactory;
-import com.heroslender.ethos.ConfigurationLoader;
-import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -59,24 +59,25 @@ public class BukkitConfigurationLoader<T> extends ConfigurationLoader<T, Configu
     }
 
     @Override
-    public Object getConfigValue(Field field, String valuePath, @Nullable Object defaultValue) throws AdapterNotFoundException {
-        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getType());
+    public Object getConfigValue(FieldPojo field, @Nullable Object defaultValue) throws AdapterNotFoundException {
+        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getField().getType());
+        final String path = field.getSerializedName();
 
-        if (!getConfig().isSet(valuePath)) {
-            getLogger().log(Level.INFO, "The field {0} is not present in the config, creating it.", valuePath);
-            typeAdapter.saveDefault(getConfig(), valuePath, defaultValue, field.getGenericType());
+        if (!field.isOptional() && !getConfig().isSet(path)) {
+            getLogger().log(Level.INFO, "The field {0} is not present in the config, creating it.", path);
+            typeAdapter.saveDefault(getConfig(), path, defaultValue, field.getField().getGenericType());
             if (getSaveConfig() != null) {
                 getSaveConfig().run();
             }
         }
 
-        return typeAdapter.get(getConfig(), valuePath, field.getGenericType());
+        return typeAdapter.get(getConfig(), path, field.getField().getGenericType());
     }
 
     @Override
-    public void setConfigValue(Field field, String valuePath, @Nullable Object value) throws AdapterNotFoundException {
-        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getType());
+    public void setConfigValue(FieldPojo field, @Nullable Object value) throws AdapterNotFoundException {
+        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getField().getType());
 
-        typeAdapter.save(getConfig(), valuePath, value, field.getGenericType());
+        typeAdapter.save(getConfig(), field.getSerializedName(), value, field.getField().getGenericType());
     }
 }

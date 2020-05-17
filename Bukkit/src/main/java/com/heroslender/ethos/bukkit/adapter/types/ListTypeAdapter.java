@@ -45,6 +45,11 @@ public class ListTypeAdapter implements BukkitTypeAdapter<List> {
         Class<?> entryType = (Class<?>) stringListType.getActualTypeArguments()[0];
         TypeAdapter<?> adapter = BukkitConfigurationLoader.TYPE_ADAPTER_FACTORY.getTypeAdapter(entryType);
 
+
+        if (!configurationSection.isSet(path)) {
+            return null;
+        }
+
         List list = new ArrayList();
         for (String s : configurationSection.getStringList(path)) {
             list.add(adapter.from(s));
