@@ -12,3 +12,89 @@ Ethos is an ORM targeted for configuration files. It features annotations for da
 
 This project came with the need to remove boilerplate code for Bukkit plugins when dealing with configuration files, dealing
 with data serialization/deserialization, data validation, etc.
+
+### Example
+```java
+public class Main extends JavaPlugin {
+    private BukkitConfigurationLoader configurationLoader;
+    public TestConfig config;
+
+    @Override
+    public void onEnable() {
+        // Create a new configuration loader for bukkit's yaml config system
+        configurationLoader = new BukkitConfigurationLoader<>(
+            // The configuration section
+            getConfig(),
+            // A runnable to save the configuration
+            this::saveConfig,
+            // The configuration class
+            TestConfig.class
+        );
+
+        // Load a new config instance
+        config = configurationLoader.load();
+        
+        getLogger().info("Hello " + config.name + " " + config.lastName);
+    }
+}
+
+public class TestConfig {
+    @SerializedName("firstName")
+    String name = "Your name";
+
+    @Optional
+    String lastName = "Your surname";
+
+    int age = 0;
+}
+```
+
+### Usage
+
+#### Maven
+
+```xml
+<repositories>
+    <repository>
+        <id>heroslender-repo</id>
+        <url>https://nexus.heroslender.com/repository/maven-public/</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.heroslender.ethos</groupId>
+        <artifactId>ethos-bukkit</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+</dependencies>
+```
+
+
+#### Gradle
+
+```groovy
+repositories {
+    maven {
+        url "https://nexus.heroslender.com/repository/maven-public/"
+    }
+}
+
+dependencies {
+    compile "com.heroslender.ethos:ethos-bukkit:1.0.0-SNAPSHOT"
+}
+```
+
+
+#### Gradle Kts
+
+```kotlin
+repositories {
+    maven("https://nexus.heroslender.com/repository/maven-public/")
+}
+
+dependencies {
+    implementation("com.heroslender.ethos:ethos-bukkit:1.0.0-SNAPSHOT")
+}
+```
