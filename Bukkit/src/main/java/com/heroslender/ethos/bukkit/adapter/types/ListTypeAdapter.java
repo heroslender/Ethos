@@ -1,5 +1,6 @@
 package com.heroslender.ethos.bukkit.adapter.types;
 
+import com.heroslender.ethos.AnnotatedField;
 import com.heroslender.ethos.bukkit.BukkitConfigurationLoader;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import com.heroslender.ethos.adapter.TypeAdapter;
@@ -36,22 +37,22 @@ public class ListTypeAdapter implements BukkitTypeAdapter<List> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public List get(ConfigurationSection configurationSection, String path, Type type) {
-        if (!(type instanceof ParameterizedType)) {
+    public List get(ConfigurationSection configurationSection, AnnotatedField field) {
+        if (!(field.getGenericType() instanceof ParameterizedType)) {
             throw new IllegalArgumentException("List without entry type?!?");
         }
 
-        ParameterizedType stringListType = (ParameterizedType) type;
+        ParameterizedType stringListType = (ParameterizedType) field.getGenericType();
         Class<?> entryType = (Class<?>) stringListType.getActualTypeArguments()[0];
         TypeAdapter<?> adapter = BukkitConfigurationLoader.TYPE_ADAPTER_FACTORY.getTypeAdapter(entryType);
 
 
-        if (!configurationSection.isSet(path)) {
+        if (!configurationSection.isSet(field.getSerializedName())) {
             return null;
         }
 
         List list = new ArrayList();
-        for (String s : configurationSection.getStringList(path)) {
+        for (String s : configurationSection.getStringList(field.getSerializedName())) {
             list.add(adapter.from(s));
         }
         return list;
