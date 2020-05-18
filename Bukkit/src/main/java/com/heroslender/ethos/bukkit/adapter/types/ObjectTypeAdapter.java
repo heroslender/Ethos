@@ -1,5 +1,6 @@
 package com.heroslender.ethos.bukkit.adapter.types;
 
+import com.heroslender.ethos.AnnotatedField;
 import com.heroslender.ethos.bukkit.BukkitConfigurationLoader;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import org.bukkit.configuration.ConfigurationSection;
@@ -26,33 +27,33 @@ public class ObjectTypeAdapter implements BukkitTypeAdapter<Object> {
     }
 
     @Override
-    public Object get(ConfigurationSection configurationSection, String path, Type type) {
+    public Object get(ConfigurationSection configurationSection, AnnotatedField field) {
         return BukkitConfigurationLoader.load(
-                configurationSection.getConfigurationSection(path),
+                configurationSection.getConfigurationSection(field.getSerializedName()),
                 null,
-                (Class<?>) type
+                field.getType()
         );
     }
 
     @Override
-    public void save(ConfigurationSection configuration, String path, Object defaultValue, Type type) {
-        ConfigurationSection section = configuration.createSection(path);
+    public void save(ConfigurationSection configuration, AnnotatedField field, Object defaultValue) {
+        ConfigurationSection section = configuration.createSection(field.getSerializedName());
 
-        new BukkitConfigurationLoader(section, null, (Class<?>) type).save(defaultValue);
+        new BukkitConfigurationLoader(section, null, field.getType()).save(defaultValue);
     }
 
     @Override
-    public void saveDefault(ConfigurationSection configuration, String path, Object defaultValue, Type type) {
-        configuration.createSection(path);
+    public void saveDefault(ConfigurationSection configuration, AnnotatedField field, Object defaultValue) {
+        configuration.createSection(field.getSerializedName());
 
         if (defaultValue == null) {
             BukkitConfigurationLoader.load(
-                    configuration.getConfigurationSection(path),
+                    configuration.getConfigurationSection(field.getSerializedName()),
                     null,
-                    (Class<?>) type
+                    field.getType()
             );
         } else {
-            save(configuration, path, defaultValue, type);
+            save(configuration, field, defaultValue);
         }
     }
 

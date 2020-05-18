@@ -1,7 +1,7 @@
 package com.heroslender.ethos.bukkit;
 
 import com.heroslender.ethos.ConfigurationLoader;
-import com.heroslender.ethos.FieldPojo;
+import com.heroslender.ethos.AnnotatedField;
 import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapterFactory;
@@ -59,25 +59,25 @@ public class BukkitConfigurationLoader<T> extends ConfigurationLoader<T, Configu
     }
 
     @Override
-    public Object getConfigValue(FieldPojo field, @Nullable Object defaultValue) throws AdapterNotFoundException {
-        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getField().getType());
+    public Object getConfigValue(AnnotatedField field, @Nullable Object defaultValue) throws AdapterNotFoundException {
+        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getType());
         final String path = field.getSerializedName();
 
         if (!field.isOptional() && !getConfig().isSet(path)) {
             getLogger().log(Level.INFO, "The field {0} is not present in the config, creating it.", path);
-            typeAdapter.saveDefault(getConfig(), path, defaultValue, field.getField().getGenericType());
+            typeAdapter.saveDefault(getConfig(), field, defaultValue);
             if (getSaveConfig() != null) {
                 getSaveConfig().run();
             }
         }
 
-        return typeAdapter.get(getConfig(), path, field.getField().getGenericType());
+        return typeAdapter.get(getConfig(), field);
     }
 
     @Override
-    public void setConfigValue(FieldPojo field, @Nullable Object value) throws AdapterNotFoundException {
-        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getField().getType());
+    public void setConfigValue(AnnotatedField field, @Nullable Object value) throws AdapterNotFoundException {
+        final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getType());
 
-        typeAdapter.save(getConfig(), field.getSerializedName(), value, field.getField().getGenericType());
+        typeAdapter.save(getConfig(), field, value);
     }
 }

@@ -1,5 +1,6 @@
 package com.heroslender.ethos.bukkit.adapter.types;
 
+import com.heroslender.ethos.AnnotatedField;
 import com.heroslender.ethos.bukkit.BukkitConfigurationLoader;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import org.bukkit.configuration.ConfigurationSection;
@@ -30,12 +31,12 @@ public class MapTypeAdapter implements BukkitTypeAdapter<Map> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map get(ConfigurationSection configurationSection, String path, Type type) {
-        if (!(type instanceof ParameterizedType)) {
+    public Map get(ConfigurationSection configurationSection, AnnotatedField field) {
+        if (!(field.getGenericType() instanceof ParameterizedType)) {
             throw new IllegalArgumentException("Map without types?!?");
         }
 
-        ParameterizedType mapType = (ParameterizedType) type;
+        ParameterizedType mapType = (ParameterizedType) field.getGenericType();
         Class<?> keyType = (Class<?>) mapType.getActualTypeArguments()[0];
         Type valType = mapType.getActualTypeArguments()[1];
         Class<?> valueType = (Class<?>) valType;
@@ -43,27 +44,33 @@ public class MapTypeAdapter implements BukkitTypeAdapter<Map> {
         BukkitTypeAdapter<?> keyAdapter = BukkitConfigurationLoader.TYPE_ADAPTER_FACTORY.getTypeAdapter(keyType);
         BukkitTypeAdapter<?> valueAdapter = BukkitConfigurationLoader.TYPE_ADAPTER_FACTORY.getTypeAdapter(valueType);
 
-        ConfigurationSection section = configurationSection.getConfigurationSection(path);
+        ConfigurationSection section = configurationSection.getConfigurationSection(field.getSerializedName());
+        if (section == null) {
+            return null;
+        }
+
         Map map = new HashMap();
         for (String key : section.getKeys(false)) {
-            map.put(keyAdapter.from(key), valueAdapter.get(section, key, valType));
+            AnnotatedField valField = new AnnotatedField(valType, key);
+
+            map.put(keyAdapter.from(key), valueAdapter.get(section, valField));
         }
 
         return map;
     }
 
     @Override
-    public void save(ConfigurationSection configuration, String path, Object defaultValue, Type type) {
-        save(configuration, path, defaultValue, type, true);
+    public void save(ConfigurationSection configuration, AnnotatedField field, Object defaultValue) {
+        save(configuration, field.getSerializedName(), defaultValue, field, true);
     }
 
     @Override
-    public void saveDefault(ConfigurationSection configuration, String path, Object defaultValue, Type type) {
-        save(configuration, path, defaultValue, type, false);
+    public void saveDefault(ConfigurationSection configuration, AnnotatedField field, Object defaultValue) {
+        save(configuration, field.getSerializedName(), defaultValue, field, false);
     }
 
-    private void save(ConfigurationSection configuration, String path, Object defaultValue, Type type, boolean forced) {
-        if (!(type instanceof ParameterizedType)) {
+    private void save(ConfigurationSection configuration, String path, Object defaultValue, AnnotatedField field, boolean forced) {
+        if (!(field.getGenericType() instanceof ParameterizedType)) {
             throw new IllegalArgumentException("Map without types?!?");
         }
 
@@ -71,7 +78,7 @@ public class MapTypeAdapter implements BukkitTypeAdapter<Map> {
             defaultValue = Collections.emptyMap();
         }
 
-        Type valType = ((ParameterizedType) type).getActualTypeArguments()[1];
+        Type valType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
         Class<?> valueType = (Class<?>) valType;
         BukkitTypeAdapter<?> valueAdapter = BukkitConfigurationLoader.TYPE_ADAPTER_FACTORY.getTypeAdapter(valueType);
 
@@ -79,11 +86,12 @@ public class MapTypeAdapter implements BukkitTypeAdapter<Map> {
         Map map = (Map) defaultValue;
         for (Object o : map.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
+            AnnotatedField valField = new AnnotatedField(valType, entry.getKey().toString());
 
             if (forced) {
-                valueAdapter.save(section, entry.getKey().toString(), entry.getValue(), valType);
+                valueAdapter.save(section, valField,  entry.getValue());
             } else {
-                valueAdapter.saveDefault(section, entry.getKey().toString(), entry.getValue(), valType);
+                valueAdapter.saveDefault(section, valField, entry.getValue());
             }
         }
     }

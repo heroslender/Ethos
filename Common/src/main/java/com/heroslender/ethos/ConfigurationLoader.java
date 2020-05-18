@@ -59,43 +59,43 @@ public abstract class ConfigurationLoader<T, C> {
     }
 
     protected void saveField(@NotNull final Field field, @NotNull final Object instance) throws IllegalAccessException {
-        final FieldPojo fieldPojo = load(field);
-        if (fieldPojo.isNotSerialized()) {
+        final AnnotatedField annotatedField = load(field);
+        if (annotatedField.isNotSerialized()) {
             return;
         }
 
         try {
             Object defaultValue = field.get(instance);
-            if (fieldPojo.isOptional() && defaultValue == null) {
+            if (annotatedField.isOptional() && defaultValue == null) {
                 return;
             }
 
-            setConfigValue(fieldPojo, defaultValue);
+            setConfigValue(annotatedField, defaultValue);
         } catch (AdapterNotFoundException e) {
             logger.log(Level.SEVERE, e, () -> "Failed to initialize the field " + field.getName());
         }
     }
 
     protected void loadField(@NotNull final Field field, @NotNull final Object instance) throws IllegalAccessException, AdapterNotFoundException {
-        final FieldPojo fieldPojo = load(field);
-        if (fieldPojo.isNotSerialized()) {
+        final AnnotatedField annotatedField = load(field);
+        if (annotatedField.isNotSerialized()) {
             return;
         }
 
-        final Object configValue = getConfigValue(fieldPojo, field.get(instance));
+        final Object configValue = getConfigValue(annotatedField, field.get(instance));
         if (configValue != null) {
             field.set(instance, configValue);
         }
     }
 
-    public abstract Object getConfigValue(FieldPojo field, @Nullable Object defaultValue) throws AdapterNotFoundException;
+    public abstract Object getConfigValue(AnnotatedField field, @Nullable Object defaultValue) throws AdapterNotFoundException;
 
-    public abstract void setConfigValue(FieldPojo field, @Nullable Object value) throws AdapterNotFoundException;
+    public abstract void setConfigValue(AnnotatedField field, @Nullable Object value) throws AdapterNotFoundException;
 
-    private FieldPojo load(@NotNull final Field field) {
+    private AnnotatedField load(@NotNull final Field field) {
         field.setAccessible(true);
 
-        FieldPojo.Builder builder = new FieldPojo.Builder(field);
+        AnnotatedField.Builder builder = new AnnotatedField.Builder(field);
         SerializedName name = field.getAnnotation(SerializedName.class);
         if (name != null) {
             builder.setSerializedName(name.value());

@@ -1,22 +1,37 @@
 package com.heroslender.ethos;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
-public class FieldPojo {
-    private final Field field;
+public class AnnotatedField {
+    private final Class<?> type;
+    private final Type genericType;
     private final String serializedName;
     private final boolean optional;
     private final boolean notSerialized;
 
-    public FieldPojo(Field field, String serializedName, boolean optional, boolean notSerialized) {
-        this.field = field;
+    public AnnotatedField(Type genericType, String serializedName) {
+        this((Class<?>) genericType, genericType, serializedName, false, false);
+    }
+
+    public AnnotatedField(Field field, String serializedName, boolean optional, boolean notSerialized) {
+        this(field.getType(), field.getGenericType(), serializedName, optional, notSerialized);
+    }
+
+    public AnnotatedField(Class<?> type, Type genericType, String serializedName, boolean optional, boolean notSerialized) {
+        this.type = type;
+        this.genericType = genericType;
         this.serializedName = serializedName;
         this.optional = optional;
         this.notSerialized = notSerialized;
     }
 
-    public Field getField() {
-        return field;
+    public Class<?> getType() {
+        return type;
+    }
+
+    public Type getGenericType() {
+        return genericType;
     }
 
     public String getSerializedName() {
@@ -39,6 +54,9 @@ public class FieldPojo {
 
         public Builder(Field field) {
             this.field = field;
+            this.serializedName = field.getName();
+            this.optional = false;
+            this.notSerialized = false;
         }
 
         public String getSerializedName() {
@@ -65,8 +83,8 @@ public class FieldPojo {
             this.notSerialized = notSerialized;
         }
 
-        public FieldPojo build() {
-            return new FieldPojo(field, serializedName, optional, notSerialized);
+        public AnnotatedField build() {
+            return new AnnotatedField(field, serializedName, optional, notSerialized);
         }
     }
 }
