@@ -1,7 +1,13 @@
 package com.heroslender.ethos;
 
+import com.heroslender.ethos.annotations.NotSerialized;
+import com.heroslender.ethos.annotations.Optional;
+import com.heroslender.ethos.annotations.SerializedName;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 public class AnnotatedField {
     private final Class<?> type;
@@ -44,6 +50,25 @@ public class AnnotatedField {
 
     public boolean isNotSerialized() {
         return notSerialized;
+    }
+
+    public static AnnotatedField load(@NotNull final Field field) {
+        Objects.requireNonNull(field, "field is null");
+
+        field.setAccessible(true);
+
+        Builder builder = new Builder(field);
+        SerializedName name = field.getAnnotation(SerializedName.class);
+        if (name != null) {
+            builder.setSerializedName(name.value());
+        } else {
+            builder.setSerializedName(field.getName());
+        }
+
+        builder.setOptional(field.isAnnotationPresent(Optional.class));
+        builder.setNotSerialized(field.isAnnotationPresent(NotSerialized.class));
+
+        return builder.build();
     }
 
     public static class Builder {
