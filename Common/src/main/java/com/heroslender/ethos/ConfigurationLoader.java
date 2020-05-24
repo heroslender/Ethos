@@ -1,5 +1,6 @@
 package com.heroslender.ethos;
 
+import com.heroslender.ethos.adapter.TypeAdapter;
 import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -104,6 +105,8 @@ public abstract class ConfigurationLoader<T, C> {
 
         return instance;
     }
+
+    public abstract void registerTypeAdapter(TypeAdapter<?> typeAdapter);
 
     public Logger getLogger() {
         return logger;

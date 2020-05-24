@@ -2,6 +2,7 @@ package com.heroslender.ethos.bukkit;
 
 import com.heroslender.ethos.ConfigurationLoader;
 import com.heroslender.ethos.AnnotatedField;
+import com.heroslender.ethos.adapter.TypeAdapter;
 import com.heroslender.ethos.adapter.exceptions.AdapterNotFoundException;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapter;
 import com.heroslender.ethos.bukkit.adapter.BukkitTypeAdapterFactory;
@@ -79,5 +80,12 @@ public class BukkitConfigurationLoader<T> extends ConfigurationLoader<T, Configu
         final BukkitTypeAdapter<?> typeAdapter = TYPE_ADAPTER_FACTORY.getTypeAdapter(field.getType());
 
         typeAdapter.save(getConfig(), field, value);
+    }
+
+    @Override
+    public void registerTypeAdapter(@NotNull final TypeAdapter<?> typeAdapter) {
+        if (BukkitTypeAdapter.class.isAssignableFrom(typeAdapter.getClass())) {
+            TYPE_ADAPTER_FACTORY.register((BukkitTypeAdapter<?>) typeAdapter);
+        }
     }
 }

@@ -22,4 +22,6 @@ public interface TypeAdapterFactory<C extends TypeAdapter<?>> {
 
         throw new AdapterNotFoundException(type);
     }
+
+    void register(C typeAdapter);
 }
